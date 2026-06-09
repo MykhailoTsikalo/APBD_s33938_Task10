@@ -1,0 +1,54 @@
+﻿@page "/observed"
+@inject StateContainer State
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<h2 class="text-dark fw-bold mb-4">⭐ System Profiler Watchlist Tracking</h2>
+
+<DataTable Items="@State.ObservedStudents" TItem="StudentDto">
+    <HeaderTemplate>
+        <th>Index Mapping Card</th>
+        <th>Unified Name Metric</th>
+        <th>System Target Email Contact</th>
+        <th class="text-center">Active Disconnect</th>
+    </HeaderTemplate>
+    <RowTemplate Context="student">
+        <td class="font-monospace fw-bold text-secondary">@student.IndexNumber</td>
+        <td>@student.FirstName @student.LastName</td>
+        <td>@student.Email</td>
+        <td class="text-center">
+            <a href="students/@student.Id" class="btn btn-sm btn-outline-primary me-2 shadow-xs">Inspect Details</a>
+            <button class="btn btn-sm btn-danger shadow-xs" @onclick="() => RequestObservationExtraction(student)">Halt Observation</button>
+        </td>
+    </RowTemplate>
+</DataTable>
+
+@code {
+    private IJSObjectReference? jsModule;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/interop.js");
+        }
+    }
+
+    private async Task RequestObservationExtraction(StudentDto student)
+    {
+        if (jsModule is not null)
+        {
+            bool extractionApproved = await jsModule.InvokeAsync<bool>("confirmAction", $"Confirm extraction of student record {student.FirstName} {student.LastName} from tracking state context?");
+            if (!extractionApproved) return;
+        }
+        State.RemoveObserved(student.Id);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (jsModule is not null)
+        {
+            await jsModule.DisposeAsync();
+        }
+    }
+}

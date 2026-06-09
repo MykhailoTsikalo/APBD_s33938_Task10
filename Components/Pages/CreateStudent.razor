@@ -1,0 +1,56 @@
+﻿@page "/students/create"
+@inject StudentsApiClient ApiClient
+@inject NavigationManager Navigation
+
+<h2 class="text-dark fw-bold mb-4">➕ Register Structural Student Entry Profile</h2>
+
+<div class="card border-0 shadow-sm rounded-3 max-width-md mx-auto bg-white p-4" style="max-width: 650px;">
+    <EditForm Model="@newStudent" OnValidSubmit="HandleProfileSubmission">
+        <DataAnnotationsValidator />
+        
+        <div class="mb-3">
+            <label class="form-label fw-bold">Student Matriculation Index Number ID</label>
+            <InputText @bind-Value="newStudent.IndexNumber" class="form-control" placeholder="e.g., S12345" />
+            <ValidationMessage For="@(() => newStudent.IndexNumber)" class="text-danger mt-1 d-block" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">First Name</label>
+            <InputText @bind-Value="newStudent.FirstName" class="form-control" placeholder="Enter first legal name" />
+            <ValidationMessage For="@(() => newStudent.FirstName)" class="text-danger mt-1 d-block" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Last Name (Family Name)</label>
+            <InputText @bind-Value="newStudent.LastName" class="form-control" placeholder="Enter family surname" />
+            <ValidationMessage For="@(() => newStudent.LastName)" class="text-danger mt-1 d-block" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Primary Institutional Communication Email</label>
+            <InputText @bind-Value="newStudent.Email" class="form-control" placeholder="account@university.edu" />
+            <ValidationMessage For="@(() => newStudent.Email)" class="text-danger mt-1 d-block" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Assigned Active Academic Term Semester (Bounds 1-8)</label>
+            <InputNumber @bind-Value="newStudent.Semester" class="form-control" />
+            <ValidationMessage For="@(() => newStudent.Semester)" class="text-danger mt-1 d-block" />
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Profiles</button>
+            <a href="students" class="btn btn-outline-secondary px-4">Cancel Route</a>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private StudentDto newStudent = new();
+
+    private async Task HandleProfileSubmission()
+    {
+        var completedEntity = await ApiClient.CreateStudentAsync(newStudent);
+        Navigation.NavigateTo($"students/{completedEntity.Id}");
+    }
+}

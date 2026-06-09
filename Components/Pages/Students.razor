@@ -1,0 +1,102 @@
+﻿@page "/"
+@page "/students"
+@using Task10.Models
+@using Task10.Services
+@using Task10.Components.Shared
+@inject StudentsApiClient ApiClient
+
+<h3>Student Management</h3>
+
+<ApiError Message="@errorMessage" />
+
+<div class="card p-3 my-3 bg-light">
+    <h5>Add New Student</h5>
+    <div class="row g-2">
+        <div class="col-md-5">
+            <input type="text" class="form-control" placeholder="First Name" @bind="newStudent.FirstName" />
+        </div>
+        <div class="col-md-5">
+            <input type="text" class="form-control" placeholder="Last Name" @bind="newStudent.LastName" />
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success w-100" @onclick="CreateStudent">Save Student</button>
+        </div>
+    </div>
+</div>
+
+<LoadingPanel IsLoading="@isLoading">
+    @if (students.Count == 0)
+    {
+        <p>No students found in the database.</p>
+    }
+    else
+    {
+        <DataTable TItem="StudentDto" Items="@students">
+            <HeaderTemplate>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th style="width: 150px;">Actions</th>
+            </HeaderTemplate>
+            <RowTemplate Context="student">
+                <td>@student.Id</td>
+                <td>@student.FirstName</td>
+                <td>@student.LastName</td>
+                <td>
+                    <a class="btn btn-sm btn-primary" href="/students/@student.Id">View Details</a>
+                </td>
+            </RowTemplate>
+        </DataTable>
+    }
+</LoadingPanel>
+
+@code {
+    private List<StudentDto> students = new();
+    private StudentDto newStudent = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudents();
+    }
+
+    private async Task LoadStudents()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            students = await ApiClient.GetStudentsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to load students. " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CreateStudent()
+    {
+        if (string.IsNullOrWhiteSpace(newStudent.FirstName) || string.IsNullOrWhiteSpace(newStudent.LastName))
+        {
+            errorMessage = "Please fill out both First Name and Last Name.";
+            return;
+        }
+
+        try
+        {
+            errorMessage = null;
+            await ApiClient.CreateStudentAsync(newStudent);
+            newStudent = new StudentDto(); // Reset form fields
+            await LoadStudents(); // Refresh table view
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to save student. " + ex.Message;
+        }
+    }
+}

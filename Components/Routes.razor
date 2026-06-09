@@ -1,0 +1,16 @@
+﻿<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <div class="container mt-5 text-center">
+                <h1 class="display-1 text-danger fw-bold">404</h1>
+                <h3 class="text-muted">Requested Route Not Found</h3>
+                <p class="lead text-secondary">The specified system panel workspace address layout is invalid.</p>
+                <a href="students" class="btn btn-primary shadow-sm mt-3">Return to Main Registry</a>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>
